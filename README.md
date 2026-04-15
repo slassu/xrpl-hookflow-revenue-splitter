@@ -91,6 +91,43 @@ View account: https://xahau-testnet.xrplwin.com/account/rDiPiMdX5AbhXtbTS2Yz7ndV
 Website: https://xrplhookflow.com
 Contact: Use the contact form on the website
 
+---
+
+## Hook 3 — Firewall Hook
+
+Blocks incoming XRP payments from a configurable blacklist of wallet 
+addresses. Protocol enforced — blocked payments are rolled back at the 
+ledger level and never settle.
+
+### Firewall Test Results
+
+| Test | Sender | Expected | Result |
+|------|--------|----------|--------|
+| Blocked address | Alice (blacklisted) | BLOCKED | ✅ tecHOOK_REJECTED |
+| Outgoing payment | Bob → Alice | Ignored | ✅ tesSUCCESS |
+| Allowed address | Charlie (not blacklisted) | Allowed | ✅ tesSUCCESS |
+| Non-XRP token | Charlie | Ignored | ✅ Rejected at ledger |
+| Explorer verification | — | Hook confirmed | ✅ Confirmed |
+
+5/5 tests passed. Selective address blocking verified on-chain.
+
+### Configuration
+
+Replace the blocked address in the util_accid call with 
+the address you want to block:
+
+```c
+util_accid(
+    SBUF(blocked_accid),
+    SBUF("rADDRESS_YOU_WANT_TO_BLOCK")
+);
+```
+
+Multiple addresses can be blocked by adding additional 
+util_accid checks before the final accept call.
+
+View account: https://xahau-testnet.xrplwin.com/account/rDiPiMdX5AbhXtbTS2Yz7ndVhfaNp3eh5H
+
 ## License
 
 MIT — free to use, modify, and distribute.
