@@ -63,6 +63,31 @@ with your own partner or developer wallet address.
 - **Standard (100 XRP):** Configured code + installation guide + email support
 - **Pro (500+ XRP):** Zero fee + custom logic + full source handoff
 
+- ---
+
+## Hook 2 — Spending Limit Hook
+
+Prevents a wallet from sending more than a configured amount 
+of XRP within a rolling 24-hour window. Uses on-chain state 
+storage to track cumulative spending across ledger closes.
+
+### Spending Limit Test Results
+
+| Test | Amount | Expected | Result |
+|------|--------|----------|--------|
+| Within limit | 100 XAH | Approved | ✅ tesSUCCESS |
+| Over limit (single) | 1100 XAH | BLOCKED | ✅ tecHOOK_REJECTED |
+| Over limit (cumulative) | 950 XAH | BLOCKED | ✅ tecHOOK_REJECTED |
+| Within remaining limit | 500 XAH | Approved | ✅ tesSUCCESS |
+| Incoming payment | 100 XAH in | Ignored | ✅ tesSUCCESS |
+| Non-XRP token | Token | Ignored | ✅ Rejected |
+| Minimum payment | 1 XAH | Approved | ✅ tesSUCCESS |
+| Explorer verification | — | Hooks + Namespaces | ✅ Confirmed |
+
+8/8 tests passed. On-chain state storage verified.
+
+View account: https://xahau-testnet.xrplwin.com/account/rDiPiMdX5AbhXtbTS2Yz7ndVhfaNp3eh5H
+
 Website: https://xrplhookflow.com
 Contact: Use the contact form on the website
 
