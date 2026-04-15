@@ -128,6 +128,38 @@ util_accid checks before the final accept call.
 
 View account: https://xahau-testnet.xrplwin.com/account/rDiPiMdX5AbhXtbTS2Yz7ndVhfaNp3eh5H
 
+---
+
+## Hook 4 — Receipt Logger Hook
+
+Logs every incoming XRP payment to on-chain state storage. 
+Tracks the last payment received (amount + ledger timestamp) 
+and maintains a running total of all XRP received. 
+All data permanently readable from the explorer Namespaces tab.
+
+### Receipt Logger Test Results
+
+| Test | Description | Expected | Result |
+|------|-------------|----------|--------|
+| Standard payment | 100 XAH incoming | Logged | ✅ tesSUCCESS |
+| Second payment | 50 XAH incoming | Logged (total: 150 XAH) | ✅ tesSUCCESS |
+| Outgoing payment | Bob → Alice | Ignored | ✅ tesSUCCESS |
+| Non-XRP token | Token payment | Ignored | ✅ Rejected at ledger |
+| Explorer verification | Namespaces tab | LAST + TOTAL on-chain | ✅ Confirmed |
+
+5/5 tests passed. On-chain state storage verified.
+Running total accumulation confirmed across multiple payments.
+
+### State Storage
+
+The Hook stores two values in the Namespaces tab:
+- **LAST** — amount in drops + ledger timestamp of most recent payment
+- **TOTAL** — cumulative XRP received since Hook installation
+
+Both values are publicly readable on-chain — no server or API required.
+
+View account: https://xahau-testnet.xrplwin.com/account/rDiPiMdX5AbhXtbTS2Yz7ndVhfaNp3eh5H
+
 ## License
 
 MIT — free to use, modify, and distribute.
