@@ -326,6 +326,64 @@ once the threshold is met. State resets automatically after each release.
 
 ---
 
+---
+
+## Hook 8 — Auto-Refund
+
+**File:** `auto_refund.c`
+**Status:** ✅ 5/5 Tests Passed
+**Triggers:** `ttPAYMENT`
+
+### Purpose
+
+The Auto-Refund Hook solves the #1 cause of lost XRP at exchanges worldwide:
+users forgetting to include a destination tag on deposits. The hook detects
+the missing tag, emits an automatic refund back to the sender within the same
+ledger close, and protects against dust spam via a configurable minimum amount.
+
+### How It Works
+
+1. Incoming XRP payment arrives at the hook account
+2. Hook ignores its own outgoing refunds (loop safety)
+3. Hook reads incoming amount and checks against `MIN_AMOUNT`
+4. If below minimum → accept silently (no refund to dust)
+5. If amount is sufficient → check for `DestinationTag`
+6. If tag present → accept silently (valid payment)
+7. If tag missing → emit refund to sender (minus fee reserve)
+
+### Hook Parameters
+
+| Parameter | Size | Description |
+|-----------|------|-------------|
+| `MIN_AMOUNT` | 8 bytes | Minimum drops to trigger refund evaluation (default 1 XAH) |
+
+### Test Results
+
+| Test | Description | Result |
+|------|-------------|--------|
+| Test 1 | Deploy `auto_refund.c` to Xahau Testnet | ✅ Pass |
+| Test 2 | Payment WITH tag (5 XAH) — accepted silently | ✅ Pass |
+| Test 3 | Payment WITHOUT tag (5 XAH) — refund emitted | ✅ Pass |
+| Test 4 | Payment below minimum (0.5 XAH) — no refund (dust protection) | ✅ Pass |
+| Test 5 | Loop safety — hook ignores its own outgoing refund | ✅ Pass |
+
+### Proof Record
+
+| Test | Evidence |
+|------|----------|
+| Deploy TX | `4E14BE1FF612E5BE2B41871FA62397015865F1918D5E6BA2ACA3D63E4115C387` |
+| Test 2 | Debug stream: `AutoRefund: tag present, accepting. ACCEPT RS: 'AutoRefund: tag valid.'` |
+| Test 3 | HookEmit TX: `C761BEB8FFDBAF13C24ACC48AB62F51F98968FCCE35D0D5BA0358D2CCC75EAEB` |
+| Test 3 | Refund TX: `4977F568C229DD41612F101DE87A040CEBF9A4DCA2650FDFC8958F7D15C173FC` (4,999,000 drops back to sender) |
+| Test 4 | Debug stream: `ACCEPT RS: 'AutoRefund: below min, no refund.'` |
+| Test 5 | No re-invocation on emitted refund — ledger metadata confirms single hook fire per incoming TX |
+
+### Hook Account
+
+`rDiPiMdX5AbhXtbTS2Yz7ndVhfaNp3eh5H`
+
+---
+
 ## License
 
 MIT — free to use, modify, and distribute.
