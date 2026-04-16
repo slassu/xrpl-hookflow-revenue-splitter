@@ -204,6 +204,63 @@ Hook confirmed installed on account `rD1P1MdX5AbhXtbTS2Yz7ndVhfaNp3eh5H`
 | Emission Types | All |
 | Explorer | [View on Xahau Testnet](https://xahau-testnet.xrplwin.com/account/rD1P1MdX5AbhXtbTS2Yz7ndVhfaNp3eh5H/hooks) |
 
+---
+
+## Hook 6 — Notification Bridge
+
+**File:** `notification_bridge.c`
+**Status:** ✅ 5/5 Tests Passed
+**Triggers:** `ttPAYMENT`
+
+### Purpose
+
+The Notification Bridge Hook emits a 1-drop "ping" payment to a configured
+notification address whenever an incoming XRP payment meets or exceeds a set
+threshold. This creates an on-chain breadcrumb that external systems, dashboards,
+or monitoring tools can listen for — bridging on-chain events to the off-chain world.
+
+### How It Works
+
+1. Triggers on incoming `ttPAYMENT` transactions only
+2. Ignores outgoing payments from the hook account itself
+3. Reads the `NOTIFY_THRESH` parameter — skips silently if below threshold
+4. Reads the `NOTIFY_ADDR` parameter — the destination for ping payments
+5. Emits a 1-drop XRP payment to `NOTIFY_ADDR` if threshold is met or exceeded
+6. Accepts the original payment regardless of emit result
+
+### Hook Parameters
+
+| Parameter | Size | Description |
+|-----------|------|-------------|
+| `NOTIFY_ADDR` | 20 bytes | AccountID (hex) to receive ping payments |
+| `NOTIFY_THRESH` | 8 bytes | Minimum drops to trigger notification |
+
+### Test Results
+
+| Test | Description | Result |
+|------|-------------|--------|
+| Test 1 | Deploy `notification_bridge.c` to Xahau Testnet | ✅ Pass |
+| Test 2 | Payment below threshold — no notification emitted | ✅ Pass |
+| Test 3 | Payment at threshold — 1-drop ping emitted | ✅ Pass |
+| Test 4 | Payment above threshold — ping emitted with HookEmit TX | ✅ Pass |
+| Test 5 | HookEmit TX hash verified in debug stream | ✅ Pass |
+
+### Proof Record
+
+| Test | Evidence |
+|------|----------|
+| Deploy TX | `975262A5B765BB652B3011EF3C26D59ADE5482B45D84A1B7DE32F159A14A950F` |
+| Test 2 | Debug stream: `ACCEPT RS: 'NotifBridge: below threshold.'` |
+| Test 3 | Debug stream: `NotifBridge: notification emitted.` + HookEmit |
+| Test 4 | HookEmit TX: `7A61112243D4C3D4AE2FA95D1B04A06BB0A8F982A769F375729A713042985809` |
+| Test 5 | HookEmit hash confirmed in Hooks Builder debug stream |
+
+### Hook Account
+
+`rDiPiMdX5AbhXtbTS2Yz7ndVhfaNp3eh5H`
+
+---
+
 ### Hook Account
 
 `rD1P1MdX5AbhXtbTS2Yz7ndVhfaNp3eh5H`
