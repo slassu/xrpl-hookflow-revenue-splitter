@@ -160,6 +160,56 @@ Both values are publicly readable on-chain — no server or API required.
 
 View account: https://xahau-testnet.xrplwin.com/account/rDiPiMdX5AbhXtbTS2Yz7ndVhfaNp3eh5H
 
+---
+
+## Hook 5 — Escrow Release
+
+**File:** `escrow_release.c`
+**Status:** ✅ 4/4 Tests Passed
+**Triggers:** `ttPAYMENT`, `ttESCROW_FINISH`
+
+### Purpose
+
+The Escrow Release Hook intercepts `EscrowFinish` transactions and enforces a
+validation policy before allowing any escrow to release funds. It confirms the
+destination matches the hook account, checks that `FinishAfter` has been reached,
+and verifies that any crypto-condition has a matching fulfillment present.
+Unauthorised or premature releases are rolled back automatically.
+
+### How It Works
+
+1. Triggers on `ttPAYMENT` (pass-through) and `ttESCROW_FINISH` (validated)
+2. Reads the escrow `sfDestination` and confirms it matches the hook account
+3. Reads `sfFinishAfter` and compares to current ledger close time
+4. Checks for `sfCondition` — if present, requires `sfFulfillment`
+5. Accepts the release if all checks pass; rolls back if any check fails
+
+### Test Results
+
+| Test | Description | Result |
+|------|-------------|--------|
+| Test 1 | Deploy `escrow_release.c` to Xahau Testnet | ✅ Pass |
+| Test 2 | Create escrow with valid condition and finish time | ✅ Pass |
+| Test 3 | Attempt premature `EscrowFinish` — hook rolls back | ✅ Pass |
+| Test 4 | Valid `EscrowFinish` after condition met — hook accepts | ✅ Pass |
+
+### Explorer Verification — Test 4
+
+Hook confirmed installed on account `rD1P1MdX5AbhXtbTS2Yz7ndVhfaNp3eh5H`
+
+| Field | Value |
+|-------|-------|
+| Hook Hash | `FDC9...490C` |
+| Active Triggers | `ttPAYMENT`, `ttESCROW_FINISH` |
+| Emission Types | All |
+| Explorer | [View on Xahau Testnet](https://xahau-testnet.xrplwin.com/account/rD1P1MdX5AbhXtbTS2Yz7ndVhfaNp3eh5H/hooks) |
+
+### Hook Account
+
+`rD1P1MdX5AbhXtbTS2Yz7ndVhfaNp3eh5H`
+
+---
+
 ## License
 
 MIT — free to use, modify, and distribute.
