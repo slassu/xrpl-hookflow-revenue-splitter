@@ -267,6 +267,65 @@ or monitoring tools can listen for — bridging on-chain events to the off-chain
 
 ---
 
+---
+
+## Hook 7 — Multi-Sig Payment Gate
+
+**File:** `multisig_gate.c`
+**Status:** ✅ 5/5 Tests Passed
+**Triggers:** `ttPAYMENT`
+
+### Purpose
+
+The Multi-Sig Payment Gate Hook blocks all outgoing transactions until M-of-N
+configured signers have submitted on-chain approvals. Signers approve by sending
+any payment to the hook account — the hook detects the sender, validates they are
+authorised, records their vote in hook state, and releases the outgoing transaction
+once the threshold is met. State resets automatically after each release.
+
+### How It Works
+
+1. Incoming payment from an authorised signer → approval recorded in hook state
+2. Each signer can only vote once per cycle — double-votes are rejected
+3. Outgoing transaction attempted → hook reads approval count from state
+4. If count < `REQUIRED_SIGS` → transaction rolled back at protocol level
+5. If count >= `REQUIRED_SIGS` → transaction released, all state reset
+
+### Hook Parameters
+
+| Parameter | Size | Description |
+|-----------|------|-------------|
+| `REQUIRED_SIGS` | 1 byte | M: number of approvals required |
+| `SIGNER_1` | 20 bytes | AccountID (hex) of authorised signer 1 |
+| `SIGNER_2` | 20 bytes | AccountID (hex) of authorised signer 2 |
+| `SIGNER_3` | 20 bytes | AccountID (hex) of authorised signer 3 |
+
+### Test Results
+
+| Test | Description | Result |
+|------|-------------|--------|
+| Test 1 | Deploy `multisig_gate.c` to Xahau Testnet | ✅ Pass |
+| Test 2 | Outgoing TX with 0 approvals — hook rolls back | ✅ Pass |
+| Test 3 | Signer 1 (Alice) sends approval — recorded in state | ✅ Pass |
+| Test 4 | Signer 2 (Charlie) sends approval — count reaches threshold | ✅ Pass |
+| Test 5 | Outgoing TX after 2-of-2 approvals — released, state reset | ✅ Pass |
+
+### Proof Record
+
+| Test | Evidence |
+|------|----------|
+| Deploy TX | `AA3D051756291DB0652FBF6EC79F26DF3544F1611F9BF7BA240F619E0029E3B8` |
+| Test 2 | Debug stream: `ROLLBACK RS: 'MultiSigGate: insufficient approvals.'` |
+| Test 3 | Debug stream: `MultiSigGate: S1 approval recorded. count: 1` |
+| Test 4 | Debug stream: `MultiSigGate: S2 approval recorded. count: 2` |
+| Test 5 | Debug stream: `MultiSigGate: approved — state reset, tx released.` |
+
+### Hook Account
+
+`rDiPiMdX5AbhXtbTS2Yz7ndVhfaNp3eh5H`
+
+---
+
 ## License
 
 MIT — free to use, modify, and distribute.
