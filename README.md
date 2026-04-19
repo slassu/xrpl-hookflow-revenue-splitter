@@ -18,10 +18,13 @@
 | **Hook account** | `rhCE4q2o7xLhHCi6qZU1LCmQaBtggx9u5t` |
 | **Split destination** | `rfWWSP7i8Nu3nEuLxfM278tr2EBQ24yaW6` |
 | **Deploy fee** | 1.003565 XAH (2,007-byte WASM) |
+| **Flags used** | `1` (hsfOVERRIDE — unnecessary for fresh install; `hsfCanEmit` was missing, see below) |
 
 **Test fire (same day):** Sent 2 XAH from test account → hook emitted 0.1 XAH (5%) to split destination within 1 ledger close. Both transactions confirmed `tesSUCCESS`.
 
 Hooks 2–8 are production-tested on testnet (46/46 passes) and deploy on demand with purchase.
+
+> **Note on flags:** The initial deploy used `Flags: 1` (`hsfOVERRIDE`), which is unnecessary for a fresh install and should be omitted. `hsfCanEmit` (`Flags: 4`) was not set — this flag should be included when a hook emits transactions. A corrected re-deploy with `Flags: 4` is planned. The hook emits correctly without it on the current Xahau version, but best practice is to set it explicitly.
 
 ---
 
@@ -113,6 +116,10 @@ open revenue_split.c
 #
 #    Parameters are NOT set by editing #define values in the .c file.
 #    They are passed in the SetHook transaction as HookParameters.
+#
+#    Recommended Flags for a fresh install:
+#    Flags: 4  (hsfCanEmit — required if hook emits transactions)
+#    DO NOT use Flags: 1 (hsfOVERRIDE) for a fresh install.
 
 # 5. Sign with Xaman via xahau.xrplwin.com → Raw JSON Transaction Sender → done
 ```
