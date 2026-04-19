@@ -24,7 +24,7 @@
 
 Hooks 2–8 are production-tested on testnet (46/46 passes) and deploy on demand with purchase.
 
-> **Note on flags:** The initial deploy used `Flags: 1` (`hsfOVERRIDE`), which is unnecessary for a fresh install and should be omitted. `hsfCanEmit` (`Flags: 4`) was not set — this flag should be included when a hook emits transactions. A corrected re-deploy with `Flags: 4` is planned. The hook emits correctly without it on the current Xahau version, but best practice is to set it explicitly.
+> **Flags update (April 19, 2026):** Initial deploy used `Flags: 1` (`hsfOVERRIDE`) only. Updated via TX [C90C8249…CFD6A1](https://xahau.xrplwin.com/tx/C90C824986AEB1567B0D01DA3AEFA5C551C3E8BF1DDAB33D93CA720B06CFD6A1) to `Flags: 5` (`hsfOVERRIDE + hsfCOLLECT`). Note: on current Xahau, flag `4` = `hsfCOLLECT`, not `hsfCanEmit` — emission capability is available by default when `hsfCanEmit` is not explicitly set.
 
 ---
 
@@ -348,3 +348,6 @@ MIT — use it, fork it, modify it. Just don't blame us if it eats your wallet.
 ## About
 
 HookFlow is a product of **Sulphurtech International Services Ltd.**, incorporated in British Columbia, Canada. Built by Steve Lassu. Hook 1 live on Xahau mainnet since April 18, 2026.
+README-final.md
+README-final.md (17 KB)
+17 KB
