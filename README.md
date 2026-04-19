@@ -7,6 +7,24 @@
 
 ---
 
+## Mainnet Deployment — Hook 1 Live
+
+**Hook 1 (Revenue Split) was deployed and verified on Xahau mainnet on April 18, 2026.**
+
+| | |
+|---|---|
+| **Deploy TX** | [FB55D1FF…28463](https://xahau.xrplwin.com/tx/FB55D1FFCB7063A8E3CA642FCE484D3A716A93D5CC2C8CF60C5F6BA813028463) |
+| **Hook hash** | `8927306F708A15EB1CEA1E4379CAB010C11EC13048D8FFAF29A3BE7B880C32F1` |
+| **Hook account** | `rhCE4q2o7xLhHCi6qZU1LCmQaBtggx9u5t` |
+| **Split destination** | `rfWWSP7i8Nu3nEuLxfM278tr2EBQ24yaW6` |
+| **Deploy fee** | 1.003565 XAH (2,007-byte WASM) |
+
+**Test fire (same day):** Sent 2 XAH from test account → hook emitted 0.1 XAH (5%) to split destination within 1 ledger close. Both transactions confirmed `tesSUCCESS`.
+
+Hooks 2–8 are production-tested on testnet (46/46 passes) and deploy on demand with purchase.
+
+---
+
 ## What this is
 
 HookFlow is a library of 8 Hooks — small WebAssembly modules that install directly onto an XRPL/Xahau account and add smart-contract behaviour at the protocol level. Each Hook solves a specific real-world wallet automation problem.
@@ -85,13 +103,18 @@ cd xrpl-hookflow-revenue-splitter
 # 2. Open the Hook you want (e.g. Revenue Split)
 open revenue_split.c
 
-# 3. Edit parameters at the top:
-#    - DEST_ACC    (hex-encoded 20-byte account ID of split destination)
-#    - SPLIT_PCT   (percentage, e.g. 5)
-#    - MIN_DROPS   (minimum amount in drops to trigger)
+# 3. Compile via Hooks Builder (https://hooks-builder.xrpl.org/develop)
+#    or locally: wasmcc revenue_split.c -o revenue_split.wasm
 
-# 4. Paste into Hooks Builder (https://hooks-builder.xrpl.org/develop)
-# 5. Click Deploy → Sign with Xaman → done
+# 4. Deploy via SetHook transaction with your parameters as HookParameters:
+#    DEST_ACC   = hex AccountID of split destination (20 bytes)
+#    SPLIT_PCT  = single byte, e.g. 0x05 for 5%
+#    MIN_DROPS  = 8-byte big-endian uint64, e.g. 0x00000000000F4240 for 1 XAH
+#
+#    Parameters are NOT set by editing #define values in the .c file.
+#    They are passed in the SetHook transaction as HookParameters.
+
+# 5. Sign with Xaman via xahau.xrplwin.com → Raw JSON Transaction Sender → done
 ```
 
 Just follow the README for each `.c` file — each has specific configuration notes for its parameters.
@@ -100,17 +123,21 @@ Just follow the README for each `.c` file — each has specific configuration no
 
 ## Hook 01 — Revenue Split
 
-**File:** [`revenue_split.c`](./revenue_split.c) · **Status:** ✅ 8/8 tests · **Triggers:** `ttPAYMENT`
+**File:** [`revenue_split.c`](./revenue_split.c) · **Status:** ✅ Live on Xahau mainnet · **Triggers:** `ttPAYMENT`
 
 Automatically splits a configurable percentage of every incoming XAH payment and routes it to a designated destination wallet. The emission happens in the same ledger close as the incoming payment, meaning no delay, no server dependency — the split fires or the transaction rolls back.
 
 **Real world:** A music producer receives royalty payments in XAH, wants 35% automatically sent to her co-producer. With this Hook: no spreadsheet, no manual transfer, no mistakes. The ledger does it.
 
-**Parameters:**
+**Parameters (set as `HookParameters` in the SetHook transaction — not `#define` values):**
 
-- `DEST_ACC` — destination wallet for the split (hex AccountID, 20 bytes)
-- `SPLIT_PCT` — percentage to send (1-100, e.g. 35 for 35%)
-- `MIN_DROPS` — minimum incoming amount in drops (default: 1,000,000 = 1 XAH)
+| Key | Key (hex) | Value encoding | Example |
+|-----|-----------|---------------|---------|
+| `DEST_ACC` | `444553545F414343` | 20-byte AccountID | `476564...` (hex of destination r-address) |
+| `SPLIT_PCT` | `53504C49545F504354` | 1-byte uint8 | `05` = 5% |
+| `MIN_DROPS` | `4D494E5F44524F5053` | 8-byte big-endian uint64 | `00000000000F4240` = 1 XAH |
+
+> **Note:** Parameters are passed at deploy time via `HookParameters` in the SetHook transaction. Editing `#define` values in the source has no effect on the deployed hook — the code reads configuration via `hook_param()` at runtime.
 
 **Tested behaviours (testnet):**
 
@@ -285,7 +312,7 @@ Earlier versions of this README linked to individual transaction records on the 
 
 **The test results themselves are documented above and are fully reproducible.** Anyone can clone this repo, deploy a hook to a fresh testnet wallet, and reproduce every test case.
 
-**Mainnet deployment is in flight.** Once Hook 1 is live on mainnet, its transaction records will be permanent and this README will link directly to them.
+**Hook 1 is live on mainnet.** Deploy TX and hook hash are in the Mainnet Deployment section at the top of this README. Testnet transaction links from earlier demo accounts no longer resolve due to pruning, but the test cases above are fully reproducible on any fresh testnet wallet.
 
 ---
 
@@ -313,4 +340,4 @@ MIT — use it, fork it, modify it. Just don't blame us if it eats your wallet.
 
 ## About
 
-HookFlow is a product of **Sulphurtech International Services Ltd.**, incorporated in British Columbia, Canada. Built by Steve Lassu. Live on Xahau.
+HookFlow is a product of **Sulphurtech International Services Ltd.**, incorporated in British Columbia, Canada. Built by Steve Lassu. Hook 1 live on Xahau mainnet since April 18, 2026.
